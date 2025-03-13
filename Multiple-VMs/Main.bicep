@@ -44,7 +44,6 @@ param vmSize string = 'Standard_DC2as_v5'
 
 @description('OS Image to be used to create the VM.')
 @allowed([
-  'Windows 11 Enterprise 22H2 Gen 2'
   'Windows 11 Enterprise 23H2 Gen 2'
   'Windows Server 2022 Gen 2'
   'Windows Server 2019 Gen 2'

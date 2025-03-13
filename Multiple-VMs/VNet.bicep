@@ -27,8 +27,20 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2021-05-01' = {
         name: subnetName
         properties: {
           addressPrefix: subnetRange
+          networkSecurityGroup: {
+            id: subnetName_nsg_01.id
+          }
         }
       }
     ]
   }
+}
+
+resource subnetName_nsg_01 'Microsoft.Network/networkSecurityGroups@2020-05-01' = {
+  name: '${subnetName}-nsg-01'
+  location: location
+  properties: {
+    securityRules: []
+  }
+  dependsOn: []
 }
