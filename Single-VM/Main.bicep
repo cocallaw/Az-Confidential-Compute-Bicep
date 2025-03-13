@@ -39,7 +39,6 @@ param vmSize string = 'Standard_DC2as_v5'
 
 @description('OS Image to be used to create the VM.')
 @allowed([
-  'Windows 11 Enterprise 22H2 Gen 2'
   'Windows 11 Enterprise 23H2 Gen 2'
   'Windows Server 2022 Gen 2'
   'Windows Server 2019 Gen 2'
@@ -67,7 +66,7 @@ param objectIDConfidentialOrchestrator string
 @description('Location for all resources, defaults to Resource Group location.')
 param location string = resourceGroup().location
 
-@description('Using the current deployment time to generate unique string for resource naming suchas the Azure Key Vault name.')
+@description('Using the current deployment time to generate unique string for resource naming such as the Azure Key Vault name.')
 param timeUnique string = utcNow('hhmmss')
 
 var virtualNetworkName = 'vnet-acc-lab'
@@ -225,7 +224,6 @@ module VNet './VNet.bicep' = {
 
 module Bastion './Bastion.bicep' = if (createBastionHost == 'yes') {
   name: 'Bastion'
-  scope: resourceGroup()
   params: {
     virtualNetworkName: virtualNetworkName
     virtualNetworkAddressRange: virtualNetworkAddressRange
