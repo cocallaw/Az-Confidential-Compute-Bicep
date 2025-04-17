@@ -26,3 +26,8 @@ The object ID can be retrieved using the Azure CLI command below, or by navigati
 `$cvmAgent = az ad sp show --id "bf7b6499-ff71-4aa2-97a4-f372087be7f0" | Out-String | ConvertFrom-Json`
 
 `$cvmAgent.id`
+
+## Parameter Info
+
+### createKeyResources
+- **Description**: Set to `true` to create the Key Vault and Disk Encryption Set resources. Set to `false` after the first deployment is sucessful to avoid conflicts with the key release policy or Disk Encryption Set resrouce. Template will use the resource names provided in the parameters file to reference the existing resources.
