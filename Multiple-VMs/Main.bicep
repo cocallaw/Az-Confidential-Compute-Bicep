@@ -68,11 +68,14 @@ param createBastionHost string = 'yes'
 @secure()
 param objectIDConfidentialOrchestrator string
 
+@description('Name of the Key Vault to be created.')
+param keyVaultName string
+
+@description('Indicates whether the disk encryption resources should be created.')
+param createKeyResources bool
+
 @description('Location for all resources, defaults to Resource Group location.')
 param location string = resourceGroup().location
-
-@description('Using the current deployment time to generate unique string for resource naming such as the Azure Key Vault name.')
-param timeUnique string = utcNow('hhmmss')
 
 var virtualNetworkName = 'vnet-acc-lab'
 var virtualNetworkAddressRange = '10.0.0.0/16'
@@ -81,7 +84,6 @@ var subnetRange = '10.0.0.0/24'
 var bastionHostName = 'bastion-acc-lab-01'
 var bastionSubnetName = 'AzureBastionSubnet'
 var bastionSubnetRange = '10.0.255.0/24'
-var keyVaultName = 'AKV-${uniqueString(resourceGroup().id,timeUnique)}'
 var diskEncryptSetName = 'DES-01'
 var imageReference = imageList[osImageName]
 var imageList = {
@@ -133,86 +135,6 @@ var linuxConfiguration = {
   }
 }
 
-resource virtualMachineBaseName_nic_0_numberOfACCVMs 'Microsoft.Network/networkInterfaces@2019-02-01' = [
-  for i in range(0, length(range(0, numberOfACCVMs))): {
-    name: '${virtualMachineBaseName}-nic-${range(0,numberOfACCVMs)[i]}'
-    location: location
-    properties: {
-      ipConfigurations: [
-        {
-          name: 'ipconfig1'
-          properties: {
-            privateIPAllocationMethod: 'Dynamic'
-            subnet: {
-              id: resourceId('Microsoft.Network/virtualNetworks/subnets', virtualNetworkName, subnetName)
-            }
-          }
-        }
-      ]
-    }
-    dependsOn: [
-      Bastion
-    ]
-  }
-]
-
-resource virtualMachineBaseName_0_numberOfACCVMs 'Microsoft.Compute/virtualMachines@2021-11-01' = [
-  for i in range(0, length(range(0, numberOfACCVMs))): {
-    name: '${virtualMachineBaseName}-${range(0,numberOfACCVMs)[i]}'
-    location: location
-    properties: {
-      hardwareProfile: {
-        vmSize: vmSize
-      }
-      storageProfile: {
-        imageReference: imageReference
-        osDisk: {
-          name: '${virtualMachineBaseName}-${range(0,numberOfACCVMs)[i]}-osdisk'
-          caching: 'ReadWrite'
-          createOption: 'FromImage'
-          managedDisk: {
-            storageAccountType: 'Premium_LRS'
-            securityProfile: {
-              diskEncryptionSet: {
-                id: resourceId('Microsoft.Compute/diskEncryptionSets', diskEncryptSetName)
-              }
-              securityEncryptionType: securityType
-            }
-          }
-        }
-        dataDisks: []
-      }
-      networkProfile: {
-        networkInterfaces: [
-          {
-            id: resourceId(
-              'Microsoft.Network/networkInterfaces',
-              '${virtualMachineBaseName}-nic-${range(0,numberOfACCVMs)[i]}'
-            )
-          }
-        ]
-      }
-      osProfile: {
-        computerName: '${virtualMachineBaseName}-${range(0,numberOfACCVMs)[i]}'
-        adminUsername: adminUsername
-        adminPassword: adminPasswordOrKey
-        linuxConfiguration: ((authenticationType == 'password') ? null : linuxConfiguration)
-        windowsConfiguration: (isWindows ? windowsConfiguration : null)
-      }
-      securityProfile: {
-        securityType: 'ConfidentialVM'
-        uefiSettings: {
-          secureBootEnabled: true
-          vTpmEnabled: true
-        }
-      }
-    }
-    dependsOn: [
-      virtualMachineBaseName_nic_0_numberOfACCVMs
-    ]
-  }
-]
-
 module DiskEncryption './DiskEncryption.bicep' = {
   name: 'DiskEncryption'
   params: {
@@ -220,6 +142,7 @@ module DiskEncryption './DiskEncryption.bicep' = {
     keyVaultName: keyVaultName
     objectIDConfidentialOrchestrator: objectIDConfidentialOrchestrator
     location: location
+    createKeyResources: createKeyResources
   }
 }
 
@@ -253,3 +176,83 @@ module Bastion './Bastion.bicep' = if (createBastionHost == 'yes') {
     VNet
   ]
 }
+
+resource NICs 'Microsoft.Network/networkInterfaces@2019-02-01' = [
+  for i in range(0, numberOfACCVMs): {
+    name: '${virtualMachineBaseName}-nic-${i}'
+    location: location
+    properties: {
+      ipConfigurations: [
+        {
+          name: 'ipconfig1'
+          properties: {
+            privateIPAllocationMethod: 'Dynamic'
+            subnet: {
+              id: resourceId('Microsoft.Network/virtualNetworks/subnets', virtualNetworkName, subnetName)
+            }
+          }
+        }
+      ]
+    }
+    dependsOn: [
+      VNet
+    ]
+  }
+]
+
+resource ACCVMs 'Microsoft.Compute/virtualMachines@2021-11-01' = [
+  for i in range(0, numberOfACCVMs): {
+    name: '${virtualMachineBaseName}-${i}'
+    location: location
+    properties: {
+      hardwareProfile: {
+        vmSize: vmSize
+      }
+      storageProfile: {
+        imageReference: imageReference
+        osDisk: {
+          name: '${virtualMachineBaseName}-${i}-osdisk'
+          caching: 'ReadWrite'
+          createOption: 'FromImage'
+          managedDisk: {
+            storageAccountType: 'Premium_LRS'
+            securityProfile: {
+              diskEncryptionSet: {
+                id: resourceId('Microsoft.Compute/diskEncryptionSets', diskEncryptSetName)
+              }
+              securityEncryptionType: securityType
+            }
+          }
+        }
+        dataDisks: []
+      }
+      networkProfile: {
+        networkInterfaces: [
+          {
+            id: resourceId(
+              'Microsoft.Network/networkInterfaces',
+              '${virtualMachineBaseName}-nic-${i}'
+            )
+          }
+        ]
+      }
+      osProfile: {
+        computerName: '${virtualMachineBaseName}-${i}'
+        adminUsername: adminUsername
+        adminPassword: adminPasswordOrKey
+        linuxConfiguration: ((authenticationType == 'password') ? null : linuxConfiguration)
+        windowsConfiguration: (isWindows ? windowsConfiguration : null)
+      }
+      securityProfile: {
+        securityType: 'ConfidentialVM'
+        uefiSettings: {
+          secureBootEnabled: true
+          vTpmEnabled: true
+        }
+      }
+    }
+    dependsOn: [
+      NICs
+    ]
+  }
+]
