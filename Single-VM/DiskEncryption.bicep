@@ -11,6 +11,9 @@ param keyVaultName string
 @secure()
 param objectIDConfidentialOrchestrator string
 
+@description('Indicates whether the key should be created.')
+param createKeyResources bool = true
+
 var keyVaultSku = 'premium'
 var keyName = 'acckey01'
 var cvmoRBACRoleName = 'Key Vault Crypto Service Release User'
@@ -23,7 +26,7 @@ var roleIdMapping = {
 var policyType = 'application/json; charset=utf-8'
 var policyData = 'ewogICJhbnlPZiI6IFsKICAgIHsKICAgICAgImFsbE9mIjogWwogICAgICAgIHsKICAgICAgICAgICJjbGFpbSI6ICJ4LW1zLWF0dGVzdGF0aW9uLXR5cGUiLAogICAgICAgICAgImVxdWFscyI6ICJzZXZzbnB2bSIKICAgICAgICB9LAogICAgICAgIHsKICAgICAgICAgICJjbGFpbSI6ICJ4LW1zLWNvbXBsaWFuY2Utc3RhdHVzIiwKICAgICAgICAgICJlcXVhbHMiOiAiYXp1cmUtY29tcGxpYW50LWN2bSIKICAgICAgICB9CiAgICAgIF0sCiAgICAgICJhdXRob3JpdHkiOiAiaHR0cHM6Ly9zaGFyZWRldXMuZXVzLmF0dGVzdC5henVyZS5uZXQvIgogICAgfSwKICAgIHsKICAgICAgImFsbE9mIjogWwogICAgICAgIHsKICAgICAgICAgICJjbGFpbSI6ICJ4LW1zLWF0dGVzdGF0aW9uLXR5cGUiLAogICAgICAgICAgImVxdWFscyI6ICJzZXZzbnB2bSIKICAgICAgICB9LAogICAgICAgIHsKICAgICAgICAgICJjbGFpbSI6ICJ4LW1zLWNvbXBsaWFuY2Utc3RhdHVzIiwKICAgICAgICAgICJlcXVhbHMiOiAiYXp1cmUtY29tcGxpYW50LWN2bSIKICAgICAgICB9CiAgICAgIF0sCiAgICAgICJhdXRob3JpdHkiOiAiaHR0cHM6Ly9zaGFyZWR3dXMud3VzLmF0dGVzdC5henVyZS5uZXQvIgogICAgfSwKICAgIHsKICAgICAgImFsbE9mIjogWwogICAgICAgIHsKICAgICAgICAgICJjbGFpbSI6ICJ4LW1zLWF0dGVzdGF0aW9uLXR5cGUiLAogICAgICAgICAgImVxdWFscyI6ICJzZXZzbnB2bSIKICAgICAgICB9LAogICAgICAgIHsKICAgICAgICAgICJjbGFpbSI6ICJ4LW1zLWNvbXBsaWFuY2Utc3RhdHVzIiwKICAgICAgICAgICJlcXVhbHMiOiAiYXp1cmUtY29tcGxpYW50LWN2bSIKICAgICAgICB9CiAgICAgIF0sCiAgICAgICJhdXRob3JpdHkiOiAiaHR0cHM6Ly9zaGFyZWRuZXUubmV1LmF0dGVzdC5henVyZS5uZXQvIgogICAgfSwKICAgIHsKICAgICAgImFsbE9mIjogWwogICAgICAgIHsKICAgICAgICAgICJjbGFpbSI6ICJ4LW1zLWF0dGVzdGF0aW9uLXR5cGUiLAogICAgICAgICAgImVxdWFscyI6ICJzZXZzbnB2bSIKICAgICAgICB9LAogICAgICAgIHsKICAgICAgICAgICJjbGFpbSI6ICJ4LW1zLWNvbXBsaWFuY2Utc3RhdHVzIiwKICAgICAgICAgICJlcXVhbHMiOiAiYXp1cmUtY29tcGxpYW50LWN2bSIKICAgICAgICB9CiAgICAgIF0sCiAgICAgICJhdXRob3JpdHkiOiAiaHR0cHM6Ly9zaGFyZWR3ZXUud2V1LmF0dGVzdC5henVyZS5uZXQvIgogICAgfSwKICAgIHsKICAgICAgImFsbE9mIjogWwogICAgICAgIHsKICAgICAgICAgICJjbGFpbSI6ICJ4LW1zLWF0dGVzdGF0aW9uLXR5cGUiLAogICAgICAgICAgImVxdWFscyI6ICJzZXZzbnB2bSIKICAgICAgICB9LAogICAgICAgIHsKICAgICAgICAgICJjbGFpbSI6ICJ4LW1zLWNvbXBsaWFuY2Utc3RhdHVzIiwKICAgICAgICAgICJlcXVhbHMiOiAiYXp1cmUtY29tcGxpYW50LWN2bSIKICAgICAgICB9CiAgICAgIF0sCiAgICAgICJhdXRob3JpdHkiOiAiaHR0cHM6Ly9zaGFyZWRldXMyLmV1czIuYXR0ZXN0LmF6dXJlLm5ldC8iCiAgICB9CiAgXSwKICAidmVyc2lvbiI6ICIxLjAuMCIKfQ'
 
-resource keyVault 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
+resource keyVault 'Microsoft.KeyVault/vaults@2021-11-01-preview' = if (createKeyResources) {
   name: keyVaultName
   location: location
   properties: {
@@ -46,7 +49,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
   }
 }
 
-resource keyVaultName_key 'Microsoft.KeyVault/vaults/keys@2021-11-01-preview' = {
+resource keyVaultName_key 'Microsoft.KeyVault/vaults/keys@2021-11-01-preview' = if (createKeyResources) {
   parent: keyVault
   name: keyName
   properties: {
@@ -67,7 +70,7 @@ resource keyVaultName_key 'Microsoft.KeyVault/vaults/keys@2021-11-01-preview' = 
   }
 }
 
-resource diskEncryptSet 'Microsoft.Compute/diskEncryptionSets@2021-12-01' = {
+resource diskEncryptSet 'Microsoft.Compute/diskEncryptionSets@2021-12-01' = if (createKeyResources) {
   name: diskEncryptSetName
   location: location
   identity: {
@@ -84,7 +87,7 @@ resource diskEncryptSet 'Microsoft.Compute/diskEncryptionSets@2021-12-01' = {
   }
 }
 
-resource roleIdMapping_desRBACRoleName_Microsoft_KeyVault_vaults_keyVault 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+resource roleIdMapping_desRBACRoleName_Microsoft_KeyVault_vaults_keyVault 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = if (createKeyResources) {
   scope: keyVault
   name: guid(roleIdMapping[desRBACRoleName], keyVault.id)
   properties: {
@@ -94,7 +97,7 @@ resource roleIdMapping_desRBACRoleName_Microsoft_KeyVault_vaults_keyVault 'Micro
   }
 }
 
-resource roleIdMapping_cvmoRBACRoleName_objectIDConfidentialOrchestrator_Microsoft_KeyVault_vaults_keyVault 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+resource roleIdMapping_cvmoRBACRoleName_objectIDConfidentialOrchestrator_Microsoft_KeyVault_vaults_keyVault 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = if (createKeyResources) {
   scope: keyVault
   name: guid(roleIdMapping[cvmoRBACRoleName], objectIDConfidentialOrchestrator, keyVault.id)
   properties: {

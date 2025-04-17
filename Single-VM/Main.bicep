@@ -63,11 +63,14 @@ param createBastionHost string = 'yes'
 @secure()
 param objectIDConfidentialOrchestrator string
 
+@description('Name of the Key Vault to be created.')
+param keyVaultName string
+
+@description('Indicates whether the key should be created.')
+param createKeyResources bool
+
 @description('Location for all resources, defaults to Resource Group location.')
 param location string = resourceGroup().location
-
-@description('Using the current deployment time to generate unique string for resource naming such as the Azure Key Vault name.')
-param timeUnique string = utcNow('hhmmss')
 
 var virtualNetworkName = 'vnet-acc-lab'
 var virtualNetworkAddressRange = '10.0.0.0/16'
@@ -76,7 +79,6 @@ var subnetRange = '10.0.0.0/24'
 var bastionHostName = 'bastion-acc-lab-01'
 var bastionSubnetName = 'AzureBastionSubnet'
 var bastionSubnetRange = '10.0.255.0/24'
-var keyVaultName = 'AKV-${uniqueString(resourceGroup().id,timeUnique)}'
 var diskEncryptSetName = 'DES-01'
 var imageReference = imageList[osImageName]
 var imageList = {
@@ -205,6 +207,7 @@ module DiskEncryption './DiskEncryption.bicep' = {
     keyVaultName: keyVaultName
     objectIDConfidentialOrchestrator: objectIDConfidentialOrchestrator
     location: location
+    createKeyResources: createKeyResources
   }
 }
 
