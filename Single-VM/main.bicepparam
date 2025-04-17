@@ -9,3 +9,5 @@ param osImageName = 'Windows 11 Enterprise 23H2 Gen 2'
 param securityType = 'DiskWithVMGuestState'
 param createBastionHost = 'yes'
 param objectIDConfidentialOrchestrator = '00000000-0000-0000-0000-000000000000'
+param keyVaultName = 'myKeyVault'
+param createKeyResources = false
