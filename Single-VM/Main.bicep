@@ -12,7 +12,7 @@ param authenticationType string = 'password'
 @secure()
 param adminPasswordOrKey string
 
-@description('Virtual machine name, will be either incrimented or appended to for the creation of related supporting resources.')
+@description('Virtual machine name, will be either incremented or appended to for the creation of related supporting resources.')
 @maxLength(10)
 param virtualMachineBaseName string = 'accvm'
 
