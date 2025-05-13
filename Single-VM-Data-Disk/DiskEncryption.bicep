@@ -107,7 +107,7 @@ resource diskEncryptSetACC 'Microsoft.Compute/diskEncryptionSets@2024-03-02' = i
   }
 }
 
-resource diskEncryptSetData 'Microsoft.Compute/diskEncryptionSets@2024-03-02' = {
+resource diskEncryptSetData 'Microsoft.Compute/diskEncryptionSets@2024-03-02' = if (createKeyResources) {
   name: diskEncryptSetNameData
   location: location
   identity: {
