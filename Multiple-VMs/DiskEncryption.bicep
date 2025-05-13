@@ -70,7 +70,7 @@ resource keyVaultName_key 'Microsoft.KeyVault/vaults/keys@2021-11-01-preview' = 
   }
 }
 
-resource diskEncryptSet 'Microsoft.Compute/diskEncryptionSets@2021-12-01' = if (createKeyResources) {
+resource diskEncryptSet 'Microsoft.Compute/diskEncryptionSets@2024-03-02' = if (createKeyResources) {
   name: diskEncryptSetName
   location: location
   identity: {
@@ -92,7 +92,7 @@ resource roleIdMapping_desRBACRoleName_Microsoft_KeyVault_vaults_keyVault 'Micro
   name: guid(roleIdMapping[desRBACRoleName], keyVault.id)
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleIdMapping[desRBACRoleName])
-    principalId: reference(diskEncryptSet.id, '2024-03-02', 'Full').identity.principalId
+    principalId: diskEncryptSet.identity.principalId
     principalType: 'ServicePrincipal'
   }
 }

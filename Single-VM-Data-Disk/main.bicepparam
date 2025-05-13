@@ -10,4 +10,4 @@ param securityType = 'DiskWithVMGuestState'
 param createBastionHost = 'yes'
 param objectIDConfidentialOrchestrator = '00000000-0000-0000-0000-000000000000'
 param keyVaultName = 'myKeyVault'
-param createKeyResources = false
+param createKeyResources = true
